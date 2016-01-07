@@ -65,4 +65,4 @@ Extracts and compiles templates found in script tags in the given HTML string.  
 
 ## License
 
-**dependify** is Copyright (c) 2015 Ryan Turnquist and licensed under the [MIT license](http://opensource.org/licenses/MIT). All rights not explicitly granted in the MIT license are reserved.
+**jqtmpl-compiler** is Copyright (c) 2015 Ryan Turnquist and licensed under the [MIT license](http://opensource.org/licenses/MIT). All rights not explicitly granted in the MIT license are reserved.
