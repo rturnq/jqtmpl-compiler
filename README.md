@@ -11,22 +11,23 @@
 ## Usage
 
 ```js
-var Compiler = require('jqtmpl-compiler');
-var compiler = new Compiler({ /* options */});
+
+    var Compiler = require('jqtmpl-compiler');
+    var compiler = new Compiler({ /* options */});
 ```
 
 ### Compile a single template
 Given a string that is a valid jQuery template
 
 ```js
-var template = compiler.compile(templateString);
+    var template = compiler.compile(templateString);
 ```
 
 ### Compile templates found in an HTML document
 Given a string containing HTML, you can extract and compile templates from all of the <code>&lt;script&gt;</code> tags found in the document.
 
 ```js
-var templates = compiler.extractScripts(htmlString);
+    var templates = compiler.extractScripts(htmlString);
 ```
 
 
