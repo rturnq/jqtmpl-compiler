@@ -5,7 +5,8 @@ var $ = require('cheerio');
 var htmlclean = require('htmlclean');
 var extend = require('extend');
 
-var rxNestedTemplates = /{{tmpl(\(.*\))?\s+["']#?([^'\"]+)['"]\s*}}/g;
+var rxNestedTemplates = /{{tmpl(\(.*\))?\s+["']#?([^'\"]+)['"]\s*}}/g,
+    rxExcludedScripts = /^text\/(javascript)$/i;
 
 function returnTrue() {
     return true;
@@ -23,7 +24,7 @@ function nameResolver(script) {
 
 function scriptFilter(script) {
     var type = script.attr('type');
-    return type && !/^text\/(javascript)$/i.test(type);
+    return !!type && !rxExcludedScripts.test(type);
 }
 
 function preProcess(source) {
@@ -71,7 +72,7 @@ Compiler.prototype.compile = function (source, opts) {
 
     if (typeof opts.nestedResolver === 'function') {
         source = source.replace(rxNestedTemplates, function (m, data, name) {
-            return '{{tmpl'+ data + ' ' + (opts.nestedResolver(name) || name) + '}}';
+            return '{{tmpl'+ (data || '') + ' ' + (opts.nestedResolver(name) || name) + '}}';
         });
     }
 
@@ -103,7 +104,7 @@ Compiler.prototype.extractScripts = function (html, opts) {
 
     return $.load(html)('script').map(function () {
         return $(this);
-    }).get().filter(opts.filter).map(function (script) {
+    }).get().filter(opts.scriptFilter).map(function (script) {
         return {
             name: opts.nameResolver(script) || 'Template_' + (++unnamedCount),
             template: _this.compile(script.html(), opts)
