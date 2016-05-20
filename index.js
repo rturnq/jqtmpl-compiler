@@ -130,7 +130,7 @@ Compiler.prototype._resolveNestedTemplates = function (nestedResolver, source) {
             if (typeof name !== 'string') {
                 return m;
             }
-            return '{{tmpl' + data + ' ' + name + '}}';
+            return '{{tmpl' + (data || '') + ' ' + name + '}}';
         });
     }
 
@@ -171,7 +171,11 @@ Compiler.prototype.extractScripts = function (html, opts) {
         unnamedCount = 0;
 
     if (typeof html !== 'string') {
-        throw new TypeError('ArgumentError - html must be a string');
+        if (html && typeof html.toString === 'function') {
+            html = html.toString();
+        } else {
+            throw new TypeError('ArgumentError - html must be a string or have a toString method');
+        }
     }
 
     opts = extend({}, Compiler.defaults, this.opts, opts);

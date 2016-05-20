@@ -176,9 +176,14 @@ describe('Compiler', () => {
                 names.push(name);
                 return 'exports[' + name + ']';
             }, source)).toEqual(out);
-            
+
             expect(names).toEqual(['"a"', "'b'", 'c']);
         });
+
+        it('should work for data-less templates', () => {
+            const source = '{{tmpl "abc"}}';
+            expect(resolveNested((name) => name, source)).toEqual(source)
+        })
     });
 
     describe('_resolveTemplateName', () => {
@@ -285,11 +290,12 @@ describe('Compiler', () => {
             expect(Array.isArray(ret)).toEqual(true);
         });
 
-        it('should throw an error if the source is not a string', () => {
+        it('should accept anything that is either a string or has a toString method', () => {
             expect(() => compiler.extractScripts()).toThrowError(TypeError);
             expect(() => compiler.extractScripts(null)).toThrowError(TypeError);
-            expect(() => compiler.extractScripts(1)).toThrowError(TypeError);
+            expect(() => compiler.extractScripts(1)).not.toThrow();
             expect(() => compiler.extractScripts('')).not.toThrow();
+            expect(() => compiler.extractScripts({ toString: () => 'hello' })).not.toThrow();
         });
 
         it('should call filterScripts html has script tags', () => {
