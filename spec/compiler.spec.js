@@ -47,6 +47,28 @@ describe('Compiler', () => {
         it('should throw an error when scripts is not an Array', () => {
             expect(() => filterScripts((script) => true, null)).toThrowError(TypeError);
         });
+
+        describe('default filter', () => {
+            const filter = Compiler.defaults.scriptFilter;
+
+            it('should exclude scripts without a type attribute', () => {
+                expect(filter($('<script></script>'))).toBe(false);
+                expect(filter($('<script type=""></script>'))).toBe(false);
+            });
+
+            it('should exclude scripts with a type "text/javascript"', () => {
+                expect(filter($('<script type="text/javascript"></script>'))).toBe(false);
+            });
+
+            it('should include scripts with type text/"x-jquery-tmpl"', () => {
+                expect(filter($('<script type="text/x-jquery-tmpl"></script>'))).toBe(true);
+            });
+
+            it('should include scripts with other type attributes', () => {
+                expect(filter($('<script type="text/template"></script>'))).toBe(true);
+                expect(filter($('<script type="garbage"></script>'))).toBe(true);
+            });
+        });
     });
 
     describe('_postProcess', () => {
@@ -68,6 +90,20 @@ describe('Compiler', () => {
 
         it('should throw an error when the provided function does not return a function', () => {
             expect(() => postProcess((template) => null, oldTemplate)).toThrowError(TypeError);
+        });
+
+        describe('default preProcess', () => {
+            const postProcess = Compiler.defaults.postProcess;
+
+            it('should override the toString method of the template function', () => {
+                const template = function anonymous(a,b,c) { return 1; };
+                const originalToString = template.toString;
+                const processed = postProcess(template)
+
+                expect(processed).toBe(template);
+                expect(processed.toString).not.toEqual(originalToString);
+                expect(processed.toString()).toEqual('function (a,b,c) { return 1; }');
+            });
         });
     });
 
@@ -96,6 +132,16 @@ describe('Compiler', () => {
 
         it('should throw an error when the provided function does not return a string', () => {
             expect(() => preProcess((s) => null, source)).toThrowError(TypeError);
+        });
+
+        describe('default preProcess', () => {
+            const preProcess = Compiler.defaults.preProcess;
+
+            it('should return the source unchanged', () => {
+                const source = "abc";
+
+                expect(preProcess(source)).toBe(source);
+            });
         });
     });
 
@@ -183,7 +229,17 @@ describe('Compiler', () => {
         it('should work for data-less templates', () => {
             const source = '{{tmpl "abc"}}';
             expect(resolveNested((name) => name, source)).toEqual(source)
-        })
+        });
+
+        describe('default resolver', () => {
+            const resolver = Compiler.defaults.nestedResolver;
+
+            it('should return the `name` property of the exports object', () => {
+                expect(resolver('"abc"')).toEqual('exports["abc"]');
+                expect(resolver("'abc'")).toEqual("exports['abc']");
+                expect(resolver('abc')).toEqual('exports[abc]');
+            });
+        });
     });
 
     describe('_resolveTemplateName', () => {
@@ -204,6 +260,16 @@ describe('Compiler', () => {
 
         it('should pass the script element to the function as the first parameter', () => {
             expect(resolve((element) => element.id, element, fallback)).toEqual(element.id);
+        });
+
+        describe('default resolver', () => {
+            const resolver = Compiler.defaults.nameResolver;
+
+            it('should return id attribute in the script object', () => {
+                expect(resolver($('<script id="hello"></script>'))).toEqual('hello');
+                expect(resolver($('<script id=""></script>'))).toEqual('');
+                expect(resolver($('<script></script>'))).toEqual(undefined);
+            });
         });
     });
 
@@ -327,5 +393,18 @@ describe('Compiler', () => {
                 }
             });
         });
+
+        // it('should resolve the nested templates', () => {
+        //     const html = '<script>{{tmpl }}</script>';
+        //
+        //     compiler.extractScripts(html, {
+        //         scriptFilter: (script) => {
+        //             expect(script).not.toEqual(null);
+        //             expect(typeof script).toEqual('object');
+        //             expect(typeof script[0]).toEqual('object');
+        //             expect(script[0].name).toEqual('script');
+        //         }
+        //     });
+        // })
     });
 });

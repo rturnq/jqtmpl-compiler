@@ -9,7 +9,7 @@ var rxNestedTemplates = /{{tmpl(\([^)]*\))?\s+(?:"#?(.+?)"|'#?(.+?)'|([A-Za-z$_(
     rxExcludedScripts = /^text\/(javascript)$/i;
 
 function nestedResolver(name) {
-    return "exports[' + name + ']";
+    return 'exports[' + name + ']';
 }
 
 function nameResolver(script) {
